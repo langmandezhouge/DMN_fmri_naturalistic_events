@@ -1,4 +1,5 @@
-#将已提取的事件nii文件用searchlight方法对每一个体素提取信号
+#将已提取的事件nii文件用searchlight方法对每一个体素提取信号（1个体素的数值用27个体素值来表示）
+#结果保存为一个事件的所有体素对应的seachlight数据（n,27),n为体素总数（52422）
 
 import warnings
 import sys
