@@ -28,6 +28,7 @@ pearson = data.corr() #对每个体素的所有事件数组，列与列之间做
 print(pearson.shape)
 print(pearson)
 
+#将相关矩阵转化为热力图
 import seaborn as sb
 import matplotlib.pyplot as plt
 sb.heatmap(data = pearson)
