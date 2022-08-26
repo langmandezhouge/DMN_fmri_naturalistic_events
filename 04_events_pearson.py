@@ -25,6 +25,8 @@ print(data.shape)
 #pearson correlation analysis
 data = pd.DataFrame(data)
 pearson = data.corr() #对每个体素的所有事件数组，列与列之间做相关
+#data.corr(method='spearman') #other method
+#data.corr(method='kendall')
 print(pearson.shape)
 print(pearson)
 
