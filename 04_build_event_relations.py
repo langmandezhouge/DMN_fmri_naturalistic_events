@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-#pearson相关分析
-#一个矩阵内列与列之间做相关（事件关系矩阵）
 
 import numpy as np
 import pandas as pd
@@ -11,10 +9,11 @@ import os
 import seaborn as sb
 import matplotlib.pyplot as plt
 
-path = '/prot/lkz/searchlihgt_pearson/pearson/results/voxel_events_result/'
+
+path = '/prot/lkz/DMN_fmri_naturalistic_events/results/03_each-voxel_event-matrix/'
 
 files = os.listdir(path)
-files.sort(key=lambda x:int(x[:-4]))
+files.sort(key=lambda x:int(x[0:-17]))
 print(files)
 
 count = len(files)
@@ -35,12 +34,12 @@ for i in range(count):
     #data.corr(method='spearman') #other method
     #data.corr(method='kendall')
 
-    output_dir = '/prot/lkz/searchlihgt_pearson/pearson/results/events_pearson_corr_result/'
-    np.save(os.path.join(output_dir, str(i)), pearson)
+    output_dir = '/prot/lkz/DMN_fmri_naturalistic_events/results/04_each-voxel_event-relation/'
+    np.save(os.path.join(output_dir, str(i+1)+'_event_relations'), pearson)
 
-    heatmap = sb.heatmap(pearson)
+'''    heatmap = sb.heatmap(pearson)
     #sb.heatmap(data = pearson,cmap="YlGnBu")
     plt.show()
 
     heatmap = heatmap.get_figure()
-    heatmap.savefig(os.path.join(output_dir, str(i)), dpi = 300)
+    heatmap.savefig(os.path.join(output_dir, str(i+1)+'_event_relations'), dpi = 300)'''
