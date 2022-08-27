@@ -98,7 +98,7 @@ for i in range(count):
         print("Begin Searchlight\n")
         sl_result = sl.run_searchlight(test, pool_size=pool_size)
 
-        output_dir = path + 'sub-' + '%.2d' % (i + 1) + '/' + 'results' + '/' + '02_searchlight_events-matrix'
+        output_dir = path + 'sub-' + '%.2d' % (i + 1) + '/' + 'results' + '/' + '02_searchlight_events-matrix' + '/'
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         np.save(os.path.join(output_dir, 'searchlight_E' + '%.2d' % (j + 1)), df)
