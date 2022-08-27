@@ -25,7 +25,7 @@ path = '/prot/lkz/searchlihgt_pearson/subjects/'
 # brain_mask = '/prot/lkz/searchlight/Naturalistic/tpl-MNI152NLin2009cAsym_res-pieman_desc-brain_mask.nii.gz'
 
 files = os.listdir(path)
-files.sort(key=lambda x: int(x[1:-7]))
+#files.sort(key=lambda x: int(x[1:-7]))
 print(files)
 
 count = len(files)
@@ -36,7 +36,7 @@ for i in range(count):
     file = os.listdir(subj_path)
     num = len(file)
     for j in range(num):
-        event_path = subj_path  + 'E' + '%.2d' % (i+1) + '.nii.gz'
+        event_path = subj_path  + 'E' + '%.2d' % (j+1) + '.nii.gz'
         event = event_path
         bold_vol = nib.load(event)
 
@@ -73,10 +73,7 @@ for i in range(count):
         # Data that is needed for all searchlights is sent to all cores via the sl.broadcast function.
         sl.broadcast(bcvar)
 
-        output_dir = '/prot/lkz/DMN_fmri_naturalistic_events/results/02_searchlight_events-matrix/'
-
         df = pd.DataFrame()
-
 
         # Set up the kernel
         def test(dataset, mask, mysl_rad, bcvar):
@@ -101,7 +98,10 @@ for i in range(count):
         print("Begin Searchlight\n")
         sl_result = sl.run_searchlight(test, pool_size=pool_size)
 
-        np.save(os.path.join(output_dir, 'searchlight_E' + str(i + 1)), df)
+        output_dir = path + 'sub-' + '%.2d' % (i + 1) + '/' + 'results' + '/' + '02_searchlight_events-matrix'
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        np.save(os.path.join(output_dir, 'searchlight_E' + '%.2d' % (j + 1)), df)
         # np.save(os.path.join(output_dir, 'sl_result'),sl_result)
         # print(sl_result.shape)
         print("End Searchlight\n")
