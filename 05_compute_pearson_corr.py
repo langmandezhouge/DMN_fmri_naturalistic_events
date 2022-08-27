@@ -15,19 +15,19 @@ print(count)
 
 target_path = '/prot/lkz/searchlihgt_pearson/pearson/results/target.npy'
 target = np.load(target_path)
-target = pd.DataFrame(target) 
 m = target.shape[0]
 n = target.shape[1]
-target = np.reshape(target, (1,m*n))
+target = target.reshape(1,m*n)
+target = pd.DataFrame(target) 
                  
 for i in range(count):
     data = files[i]
     datas = np.load(path + data)
     print(datas.shape)
-    datas = pd.DataFrame(datas) 
     a = datas.shape[0]
     b = datas.shape[1]
-    data = np.reshape(datas, (1,a*b))
+    data = datas.reshape(1,a*b)
+    datas = pd.DataFrame(datas) 
     
     pearson_corr = np.corrcoef(data, target)  
     print(pearson_corr.shape)
