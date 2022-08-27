@@ -13,7 +13,6 @@ import os
 import time
 from nilearn import plotting
 from brainiak.searchlight.searchlight import Searchlight
-from brainiak.fcma.preprocessing import prepare_searchlight_mvpa_data
 from brainiak import io
 import pandas as pd
 from pathlib import Path
@@ -39,6 +38,7 @@ for i in range(count):
     brain_mask = masking.compute_background_mask(bold_vol)
     print(brain_mask.get_data().shape) 
      
+#    bold_vol = nib.load(path + bold_vol)
     affine_mat = bold_vol.affine
     dimsize = (3.0, 3.0, 4.0, 1.5)
 
@@ -95,7 +95,7 @@ for i in range(count):
     print("Begin Searchlight\n")
     sl_result = sl.run_searchlight(test, pool_size=pool_size) 
 
-    np.save(os.path.join(output_dir,  'searchlight_E' + str(i)), df)
+    np.save(os.path.join(output_dir,  'searchlight_E' + str(i+1)), df)
     #np.save(os.path.join(output_dir, 'sl_result'),sl_result)
     #print(sl_result.shape)
     print("End Searchlight\n")
