@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 #pearson相关分析
-#方式一：两个向量之间做相关，np.corrcoef函数.两个矩阵可以先拉成向量，再做相关
-#方式二：一个矩阵内列与列之间做相关（事件关系矩阵）
+#一个矩阵内列与列之间做相关（事件关系矩阵）
 
 import numpy as np
 import pandas as pd
@@ -11,14 +10,6 @@ from scipy.stats import stats
 import os
 import seaborn as sb
 import matplotlib.pyplot as plt
-
-#方式一：两个向量之间做相关
-'''pearson = np.corrcoef(x, y)  #x和y为两个向量.若为矩阵，则先将x和y拉成一维向量，再做相关
-print(pearson.shape)
-print(pearson)'''
-
-
-#方式二：一个矩阵内列与列之间做相关（即构建事件关系矩阵）
 
 path = '/prot/lkz/searchlihgt_pearson/pearson/results/voxel_events_result/'
 
