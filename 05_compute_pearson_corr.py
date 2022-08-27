@@ -4,16 +4,16 @@ import numpy as np
 import pandas as pd
 import os
 
-path = '/prot/lkz/searchlihgt_pearson/pearson/results/voxel_events_result/'
+path = '/prot/lkz/DMN_fmri_naturalistic_events/results/03_each-voxel_event-matrix/'
 
 files = os.listdir(path)
-files.sort(key=lambda x:int(x[:-4]))
+files.sort(key=lambda x:int(x[0:-17]))
 print(files)
 
 count = len(files)
 print(count)
 
-target_path = '/prot/lkz/searchlihgt_pearson/pearson/results/target.npy'
+target_path = '/prot/lkz/DMN_fmri_naturalistic_events/results/target.npy'
 target = np.load(target_path)
 m = target.shape[0]
 n = target.shape[1]
@@ -37,5 +37,5 @@ for i in range(count):
     #sb.heatmap(data = pearson,cmap="YlGnBu")
 #    plt.show()
                  
-    output_dir = '/prot/lkz/searchlihgt_pearson/pearson/results/pearson_corr_result/'
-    np.save(os.path.join(output_dir, str(i)), pearson_corr)         
+    output_dir = '/prot/lkz/DMN_fmri_naturalistic_events/results/05_matrixs_pearon-corr/'
+    np.save(os.path.join(output_dir, str(i+1)+'_pearson_corr'), pearson_corr)
