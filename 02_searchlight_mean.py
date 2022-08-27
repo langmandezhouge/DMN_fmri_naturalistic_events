@@ -76,7 +76,9 @@ for i in range(count):
     def test(dataset, mask, mysl_rad, bcvar):
         dataset = np.array(dataset)
         print(dataset.shape)
-        datas = np.reshape(dataset, ( 3 * 3 * 3,15)) 
+        a = dataset.shape[4]
+        b = dataset.shape[1]
+        datas = np.reshape(dataset, ( b*b*b,a))
         print(datas.shape)
         datas = np.mean(datas, axis=1) 
         print(datas.shape)
