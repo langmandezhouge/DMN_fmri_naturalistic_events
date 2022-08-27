@@ -1,4 +1,4 @@
-#提取事件（指定时间点TR），并保存为nii格式
+'''extract events(specific TRs), and save to nii format file'''
 
 from nilearn.image import load_img
 import nibabel as nib
