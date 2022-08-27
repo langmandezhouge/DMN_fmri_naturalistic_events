@@ -13,7 +13,8 @@ print(files)
 count = len(files)
 print(count)
 
-target = np.load('/prot/lkz/searchlihgt_pearson/pearson/results/target.npy)
+target_path = '/prot/lkz/searchlihgt_pearson/pearson/results/target.npy'
+target = np.load(target_path)
 target = pd.DataFrame(target) 
 m = target.shape[0]
 n = target.shape[1]
