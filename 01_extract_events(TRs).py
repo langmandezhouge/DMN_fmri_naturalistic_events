@@ -8,15 +8,15 @@ import os
 from nilearn import masking
 from pathlib import Path
 
-input_dir = '/prot/lkz/searchlight/Naturalistic/sub-001_task-pieman_run-1_space-MNI152NLin2009cAsym_res-native_desc-sm6_bold.nii.gz'
-output_dir = '/prot/lkz/searchlight/Naturalistic/results/'
-output_name = 'data.nii.gz'
+input_dir = '/prot/lkz/DMN_fmri_naturalistic_events/dataset/sub-001_task-pieman_run-1_space-MNI152NLin2009cAsym_res-native_desc-sm6_bold.nii.gz'
+output_dir = '/prot/lkz/DMN_fmri_naturalistic_events/results/01_fmri_nii_events/'
+output_name = 'E3.nii.gz'
 
 fMRIData = nib.load(input_dir)
 nii = fMRIData.get_data()
 
 # extract data for this subject,the fourth dimension is TRs(timepoints)
-data_nii = nii[:,:,:,0:15]
+data_nii = nii[:,:,:,200:250]
 #print(data_nii)
 
 # View non-zero values in the matrix
