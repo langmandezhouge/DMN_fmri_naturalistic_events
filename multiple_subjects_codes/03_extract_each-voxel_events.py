@@ -22,6 +22,7 @@ for i in range(count):
     n = voxel_file.shape[0]
 
     for k in range(n):
+        print(k)
         df = pd.DataFrame()
         for j in range(num):
             voxel_events_path = subj_path  + 'searchlight_E' + '%.2d' % (j + 1) + '.npy'
