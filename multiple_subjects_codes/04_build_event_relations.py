@@ -20,10 +20,12 @@ count = len(files)
 print(count)
 
 for i in range(count):
+    print(i)
     subj_path = path + 'sub-' + '%.2d' % (i + 1) + '/' + 'results' + '/' + '03_each-voxel_event-matrix' + '/'
     file = os.listdir(subj_path)
     num = len(file)
     for j in range(num):
+        print(j)
         voxel_events_path = subj_path  + '%.5d' % (j + 1) + '_voxel_events.npy'
         voxel_events = voxel_events_path
         dataset = np.load(voxel_events)
