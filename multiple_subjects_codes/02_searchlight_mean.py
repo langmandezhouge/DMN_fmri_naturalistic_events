@@ -32,10 +32,12 @@ count = len(files)
 print(count)
 
 for i in range(count):
+    print(i)
     subj_path = path + 'sub-' + '%.2d' % (i + 1) + '/' + 'results' + '/' + '01_fmri_nii_events' + '/'
     file = os.listdir(subj_path)
     num = len(file)
     for j in range(num):
+        print(j)
         event_path = subj_path  + 'E' + '%.2d' % (j+1) + '.nii.gz'
         event = event_path
         bold_vol = nib.load(event)
