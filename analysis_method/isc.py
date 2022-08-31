@@ -112,6 +112,7 @@ for task_name in all_task_names:
 isc_maps = {}
 for task_name in all_task_names:
     isc_maps[task_name] = isc(bold[task_name], pairwise=False)
+    # isc_maps[task_name] = isc(bold[task_name], pairwise=False, summary_statistic='mean') # mean isc
     np.save(os.path.join(dir_out, 'isc_maps_%s' % (task_name)), isc_maps[task_name])
     print('Shape of %s condition:' % task_name, np.shape(isc_maps[task_name]))
     subj_num = np.shape(isc_maps[task_name])[0]
