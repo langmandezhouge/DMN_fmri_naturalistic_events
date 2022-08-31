@@ -143,3 +143,42 @@ for task_name in all_task_names:
         ax.set_title('ISC map for subject {}, task = {}'.format(subj_id+1, task_name))
         plt.savefig(os.path.join(subj_dir + 'ISC_%s_sub-%.3d.png' % (task_name, subj_id+1)),bbox_inches='tight', dpi=450)
         plt.show()
+        
+        
+        
+        '''volumetric space to surface space'''
+
+        view = 'medial'
+
+        # get a surface
+        fsaverage = datasets.fetch_surf_fsaverage()
+
+        # make "texture"
+        texture = surface.vol_to_surf(isc_nifti, fsaverage.pial_left)
+
+        # plot
+        title_text = ('Left Avg ISC map, {} for sub-%.3d'.format(task_name) % (subj_id + 1))
+        surf_left_map = plotting.plot_surf_stat_map(
+            fsaverage.infl_left, texture,
+            hemi='left', view=view,
+            title=title_text,
+            threshold=threshold, cmap='RdYlBu_r',
+            colorbar=True,
+            bg_map=fsaverage.sulc_left)
+        plt.savefig(os.path.join(subj_dir + 'fsaverage_left_ISC_%s_sub-%.3d.png' % (task_name, subj_id + 1)),
+                    bbox_inches='tight', dpi=450)
+        plt.show()
+
+        # plot
+        title_text = ('Right Avg ISC map, {} for sub-%.3d'.format(task_name) % (subj_id + 1))
+        surf_right_map = plotting.plot_surf_stat_map(
+            fsaverage.infl_right, texture,
+            hemi='right', view=view,
+            title=title_text,
+            threshold=threshold, cmap='RdYlBu_r',
+            colorbar=True,
+            bg_map=fsaverage.sulc_right)
+
+        plt.savefig(os.path.join(subj_dir + 'fsaverage_right_ISC_%s_sub-%.3d.png' % (task_name, subj_id + 1)),
+                    bbox_inches='tight', dpi=450)
+        plt.show()
