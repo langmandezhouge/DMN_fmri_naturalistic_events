@@ -112,8 +112,8 @@ for task_name in all_task_names:
 isc_maps = {}
 for task_name in all_task_names:
     isc_maps[task_name] = isc(bold[task_name], pairwise=False)
+    np.save(os.path.join(dir_out, 'isc_maps_%s' % (task_name)), isc_maps[task_name])
     print('Shape of %s condition:' % task_name, np.shape(isc_maps[task_name]))
-    np.save(os.path.join(dir_out,'isc_maps[task_name]'),isc_maps[task_name])
     subj_num = np.shape(isc_maps[task_name])[0]
     for subj_id in range(0,subj_num):
 
@@ -125,8 +125,10 @@ for task_name in all_task_names:
         isc_nifti = nib.Nifti1Image(isc_vol, brain_nii.affine, brain_nii.header)
 
         # Save the ISC data as a volume
-
-        isc_map_path = os.path.join(dir_out, 'ISC_%s_sub%.3d.nii.gz' % (task_name, subj_id+1))
+        subj_dir = dir_out + 'sub-%.3d'%(subj_id+1) +'/'
+        if not os.path.exists(subj_dir):
+            os.makedirs(subj_dir)
+        isc_map_path = os.path.join(subj_dir, 'ISC_%s_sub-%.3d.nii.gz' % (task_name, subj_id+1))
         nib.save(isc_nifti, isc_map_path)
 
         # Plot the data as a statmap
@@ -136,8 +138,8 @@ for task_name in all_task_names:
         plotting.plot_stat_map(
             isc_nifti,
             threshold=threshold,
-            axes=ax                  
+            axes=ax
         )
         ax.set_title('ISC map for subject {}, task = {}'.format(subj_id+1, task_name))
-        plt.savefig(os.path.join(dir_out + 'ISC_%s_sub%.3d.png' % (task_name, subj_id+1)),bbox_inches='tight', dpi=450)
+        plt.savefig(os.path.join(subj_dir + 'ISC_%s_sub-%.3d.png' % (task_name, subj_id+1)),bbox_inches='tight', dpi=450)
         plt.show()
