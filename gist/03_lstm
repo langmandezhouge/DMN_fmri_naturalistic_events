@@ -1,0 +1,128 @@
+#-*- coding:utf-8 -*-
+import torch
+import torch.utils.data.dataset as Dataset
+import torch.utils.data.dataloader as DataLoader
+import numpy as np
+from torch.nn.utils.rnn import pad_sequence,pack_padded_sequence,pack_sequence,pad_packed_sequence
+import torch.nn as nn
+from torch.autograd import Variable
+from torch.nn import utils as nn_utils
+from torchinfo import summary
+
+'''a = torch.tensor([1, 2, 3, 4])  # sentence 1
+b = torch.tensor([5, 6, 7])  # sentence 2
+c = torch.tensor([7, 8])  # sentence 3
+d = torch.tensor([9])  # sentence 4
+
+Data = [a, b, c, d]'''
+
+file = '/prot/lkz/LSTM/results/searchlight_E.npy'
+file = np.load(file)
+voxel_01 = file[0:27,:]
+voxel_02 = file[27:54,0:10]
+voxel_03 = file[54:81,0:7]
+voxel_04 = file[54:81,0:12]
+voxel_01 = np.transpose(voxel_01)
+voxel_02 = np.transpose(voxel_02)
+voxel_03 = np.transpose(voxel_03)
+voxel_04 = np.transpose(voxel_04)
+
+#x = torch.from_numpy(x)
+x1 = torch.tensor(voxel_01)
+x2 = torch.tensor(voxel_02)
+x3 = torch.tensor(voxel_03)
+x4 = torch.tensor(voxel_04)
+
+
+'''Data = [x1,x2,x3,x4]
+#Label = torch.tensor([[0], [1], [2],[3]])'''
+
+Data = torch.randn(6, 5, 4)
+#Label = torch.randn(6,5, 2)
+Label = [1,2,2,1,2,1]
+class subDataset(Dataset.Dataset):
+    # 初始化，定义数据内容和标签
+    def __init__(self, Data, Label):
+        self.Data = Data
+        self.Label = Label
+
+    # 返回数据集大小
+    def __len__(self):
+        return len(self.Data)
+
+    # 得到数据内容和标签
+    def __getitem__(self, index):
+        data = torch.Tensor(self.Data[index])
+        label = torch.Tensor(self.Label[index])
+        return data, label
+
+def collate_fn(dataset):
+    dataset.sort(key=lambda x: len(x), reverse=True)
+
+    data_batch = []
+    label_batch = []
+    data_len = []
+    for data,label in dataset:
+   # for i in range(len(dataset)):
+        #datas = dataset[i]
+        data_batch.append(data)
+        data_len.append(len(data))
+        label_batch.append(label)
+    # 注意data_batch内必须是tensor,才能使用pad_sequence
+    global seq_len
+    seq_len = [s.size(0) for s in data_batch]
+    print(seq_len)
+    label_len = [s.size(0) for s in label_batch]
+    data_batch = pad_sequence(data_batch, batch_first=True)
+   # print(data_batch)
+    label_batch = pad_sequence(label_batch,batch_first=True)
+    data_batch = pack_padded_sequence(data_batch, seq_len, batch_first=True, enforce_sorted=False)
+    label_batch = pack_padded_sequence(label_batch, label_len, batch_first=True, enforce_sorted=False)
+  #  print(data_batch)
+    return {'data': data_batch, 'label': label_batch, 'data_len': data_len}
+
+dataset = subDataset(Data, Label)
+print(dataset)
+print('dataset大小为：', dataset.__len__())
+#print(dataset.__getitem__(0))
+#print(dataset[0])
+#print(dataset[1])
+
+# 创建DataLoader迭代器
+dataloader = DataLoader.DataLoader(dataset, batch_size=2, shuffle=False, num_workers=0,collate_fn=collate_fn)
+max_epochs = 5
+for epoch in range(max_epochs):
+    for i, item in enumerate(dataloader):
+        print('i:', i)
+        data = item['data']
+        label = item['label']
+        label = label[0]
+        #  print('data:', data)
+        # print('label:', label)
+
+        # build model
+        lstm = nn.LSTM(4, 3, 2,batch_first=True)  # (input_size,hidden_size,num_layers)
+        # lstm = nn.LSTM(input_size=27, hidden_size=20, num_layers=2)
+        h0 = Variable(torch.randn(2, 2, 3))
+        # (num_layers* 1,batch_size,hidden_size)  num_directions=1
+        c0 = Variable(torch.randn(2, 2, 3))
+
+        loss_function = nn.MSELoss()
+        optimizer = torch.optim.Adam(lstm.parameters(), lr=1e-2)
+        output, (hn, cn) = lstm(data, (h0, c0))
+        print(hn[-1, :, :])
+        output = nn_utils.rnn.pad_packed_sequence(output)
+        output = output[0][-1]
+        print(output)
+        loss = loss_function(output, label)
+
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+
+        if loss.item() < 1e-4:
+            print('Epoch [{}/{}], Loss: {:.5f}'.format(epoch + 1, max_epochs, loss.item()))
+            print("The loss value is reached")
+            break
+        elif (epoch + 1) % 100 == 0:
+            print('Epoch: [{}/{}], Loss:{:.5f}'.format(epoch + 1, max_epochs, loss.item()))
