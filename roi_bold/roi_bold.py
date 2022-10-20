@@ -23,6 +23,7 @@ atlas_filename = '/prot/lkz/LSTM/results/mask/atlas_246.nii'
 plotting.plot_roi(atlas_filename);
 print('Harvard-Oxford cortical atlas')
 plt.show()
+
 # Create a masker object that we can use to select ROIs
 masker_ho = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
 #print(masker_ho.get_params())
@@ -30,19 +31,15 @@ masker_ho = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
 # Apply our atlas to the Nifti object so we can pull out data from single parcels/ROIs
 bold_ho = masker_ho.fit_transform(nii)
 #print('shape: parcellated bold time courses: ', np.shape(bold_ho))
-bold_ho_arr = np.array(bold_ho)
-print("All time points ", bold_ho.shape)
-print(bold_ho_arr.shape[1])
 
-for idx, line in enumerate(bold_ho_arr):
-    roi_id = 0
-    bold_ho_pPHG_r = np.array(bold_ho[:, roi_id])
-    bold_ho_pPHG_r = bold_ho_pPHG_r.reshape(bold_ho_pPHG_r.shape[0], -1)
-    print("Posterior PPC (region 35) rightward attention trials: ", bold_ho_pPHG_r.shape)
+roi_id = 34
+bold_ho_pPHG_r = np.array(bold_ho[:, roi_id])
+bold_ho_pPHG_r = bold_ho_pPHG_r.reshape(bold_ho_pPHG_r.shape[0], -1)
+print("Posterior PPC (region 35) rightward attention trials: ", bold_ho_pPHG_r.shape)
 
-    '''plt.figure(figsize=(14,4))
-    plt.plot(bold_ho_pPHG_r)
-    plt.ylabel('Evoked activity')
-    plt.xlabel('Timepoints')
-    sns.despine()
-    plt.show()'''
+plt.figure(figsize=(14,4))
+plt.plot(bold_ho_pPHG_r)
+plt.ylabel('Evoked activity')
+plt.xlabel('Timepoints')
+sns.despine()
+plt.show()
