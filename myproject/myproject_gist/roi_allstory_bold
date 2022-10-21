@@ -1,5 +1,3 @@
-# extract each roi bold time series of all stories
-
 # -*- coding: utf-8 -*-
 
 import warnings
@@ -11,17 +9,15 @@ if not sys.warnoptions:
 import nibabel as nib
 import numpy as np
 import os
-import time
-from brainiak.searchlight.searchlight import Searchlight
-import pandas as pd
-from nilearn import masking
+
 from os.path import basename, join
 import json
 from glob import glob
 
 from natsort import natsorted
 from exclude_scans import exclude_scan
-from nilearn.input_data import NiftiLabelsMasker
+from nilearn import input_data
+from nilearn.input_data import NiftiMasker
 from nilearn import plotting
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -124,42 +120,31 @@ for idx in range(len):
                             # Strip comments and load in data as numpy array
                             subj_data = nib.load(bold_fn)
 
-                            atlas_filename = '/prot/lkz/LSTM/results/mask/atlas_246.nii'
+                            atlas_filename = '/prot/lkz/LSTM/roi_results/roi_mask/' + 'roi_' + '%03d'%(roi_id+1) + '.nii.gz'
                             # Plot the ROIs
                             '''plotting.plot_roi(atlas_filename);
                             print('Harvard-Oxford cortical atlas')
                             plt.show()'''
-                            # Create a masker object that we can use to select ROIs
-                            masker_ho = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
-                            # Apply our atlas to the Nifti object so we can pull out data from single parcels/ROIs
-                            bold_ho = masker_ho.fit_transform(subj_data)
-                            # print('shape: parcellated bold time courses: ', np.shape(bold_ho))
-                           # print("All time points ", bold_ho.shape)
 
-                            bold_ho_r = np.array(bold_ho[:, roi_id])
-                            bold_vol = bold_ho_r.reshape(bold_ho_r.shape[0], -1)
+                            # Init a masker object that also standardizes the data
+                            masker_wb = input_data.NiftiMasker(mask_img=atlas_filename, standardize=True)
+                            # Pull out the time course for voxel
+                            bold_vol = masker_wb.fit_transform(subj_data)
 
+                           # bold_vol = bold_ho_r.reshape(bold_ho_r.shape[0], -1)
+                            bold_vol_roi = np.transpose(bold_vol)
                             # Trim data based on event onset and duration
-                            bold_vol_roi = bold_vol[onset:offset, :]
-                            #print(bold_vol_roi.shape)
-                            '''plt.figure(figsize=(14, 4))
-                            plt.plot(bold_vol_roi)
-                            plt.ylabel('Evoked activity')
-                            plt.xlabel('Timepoints')
-                            sns.despine()
-                            plt.show()'''
-                            bold_vol_roi = np.transpose(bold_vol_roi)
+                            bold_vol_roi = bold_vol_roi[:,onset:offset]
+
                             print("region roi_id attention trials: ", roi_id + 1)
                             print("subject: ", subject)
 
-                            subject_list.append(subject)
+                            # Make directory to save results
+                            output_dir = '/prot/lkz/LSTM/roi_results/roi_story_all_subj/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(subtask)
+                            if not os.path.exists(output_dir):
+                                os.makedirs(output_dir)
+                            np.save(os.path.join(output_dir, 'roi-%03d_%s_sub-%s_bold' % (roi_id + 1, subtask, subject)), data)
+
+                            '''subject_list.append(subject)
                             run_list.append(basename(bold_fn))
-                            data.append(bold_vol_roi)
-
-                            #data.append(bold_vol_roi)
-
-                # Make directory to save results
-                output_dir = '/prot/lkz/LSTM/results/roi_story_all_subj/' + 'region-%03d' % (roi_id + 1)
-                if not os.path.exists(output_dir):
-                    os.makedirs(output_dir)
-                np.save(os.path.join(output_dir, '%03d_%s_bold'%(roi_id+1,subtask)), data)
+                            data.append(bold_vol_roi)'''
