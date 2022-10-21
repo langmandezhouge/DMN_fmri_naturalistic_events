@@ -6,10 +6,8 @@ if not sys.warnoptions:
 import numpy as np
 import os
 import nibabel as nib
-from nilearn.input_data import NiftiMasker, NiftiLabelsMasker
+from nilearn.input_data import NiftiLabelsMasker
 from nilearn import plotting
-from scipy import stats
-from scipy.ndimage.measurements import center_of_mass
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
