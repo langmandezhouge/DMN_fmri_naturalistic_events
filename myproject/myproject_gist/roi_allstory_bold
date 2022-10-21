@@ -1,0 +1,165 @@
+# extract each roi bold time series of all stories
+
+# -*- coding: utf-8 -*-
+
+import warnings
+import sys
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+
+import nibabel as nib
+import numpy as np
+import os
+import time
+from brainiak.searchlight.searchlight import Searchlight
+import pandas as pd
+from nilearn import masking
+from os.path import basename, join
+import json
+from glob import glob
+
+from natsort import natsorted
+from exclude_scans import exclude_scan
+from nilearn.input_data import NiftiLabelsMasker
+from nilearn import plotting
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+space = 'MNI152NLin2009cAsym'
+afni_pipe = 'afni-smooth'
+initial_trim = 6
+
+base_dir = '/prot/lkz/Narratives-snastase/Narratives'
+deriv_dir = join(base_dir, 'derivatives')
+preproc_dir = join(deriv_dir, 'fmriprep')
+afni_dir = join(base_dir, 'derivatives', afni_pipe)
+
+code_dir = '/prot/lkz/LSTM/github/'
+# Get metadata for all subjects for a given task
+with open(join(code_dir, 'code', 'task_meta.json')) as f:
+    task_meta = json.load(f)
+
+# Get event onsets and durations for each task
+with open(join(base_dir, 'code', 'event_meta.json')) as f:
+    event_meta = json.load(f)
+
+# Load scans to exclude
+exclude = True
+with open(join(base_dir, 'code', 'scan_exclude.json')) as f:
+    scan_exclude = json.load(f)
+
+# Skip 'notthefall' scramble and 'schema' tasks for simplicity
+skip_tasks = ['notthefalllongscram', 'notthefallshortscram',
+              'schema']
+
+len = 246
+for idx in range(len):
+    roi_id = idx
+    # Compile whole-brain ISCs across all subjects
+    for task in task_meta:
+
+        # Skip 'schema' task for simplicity
+        if task in skip_tasks:
+            print(f"Skipping {task} for whole-brain ISC analysis")
+            continue
+
+        # Split off 'slumlordreach' stories
+        if task == 'slumlordreach':
+            subtasks = ['slumlord', 'reach']
+
+        else:
+            subtasks = [task]
+
+        # Loop through potential substories (i.e. for 'slumlordreach')
+        for subtask in subtasks:
+
+            # Split milkyway and prettymouth by condition/group;
+            # note that this means we're implicitly ignoring the
+            # naive vs non-naive listening conditions of merlin,
+            # sherlock, shapesphysical, shapessocial, notthefall
+            if task == 'milkyway':
+                groups = ['original', 'vodka', 'synonyms']
+            elif task == 'prettymouth':
+                groups = ['affair', 'paranoia']
+            else:
+                groups = [None]
+
+            # Grab event onsets and offsets for trimming
+            onset = event_meta[task][subtask]['onset']
+            offset = onset + event_meta[task][subtask]['duration']
+
+            # Get a convenience subject list for this task
+            subjects = sorted(task_meta[task].keys())
+
+            # Loop through potential group manipulations (milkyway, paranoia)
+            for group in groups:
+
+                # Create lists for storing subjects and run filenames
+                subject_list, run_list = [], []
+                data = []
+                for subject in subjects:
+
+                    # Skip the subjects not belonging to this group
+                    if group and group != task_meta[subtask][
+                        subject]['condition']:
+                        continue
+
+                    data_dir = join(afni_dir, subject, 'func')
+
+                    bold_fns = natsorted(glob(join(data_dir,
+                                                   (
+                                                       f'{subject}_task-{task}_*space-{space}_res-native_desc-sm6_bold.nii.gz'))))
+
+                    # Grab all runs in case of multiple run
+                    for bold_fn in bold_fns:
+
+                        if exclude and exclude_scan(bold_fn, scan_exclude):
+                            print(f"Excluding {basename(bold_fn)}!")
+                            continue
+
+                        else:
+
+                            # Strip comments and load in data as numpy array
+                            subj_data = nib.load(bold_fn)
+
+                            atlas_filename = '/prot/lkz/LSTM/results/mask/atlas_246.nii'
+                            # Plot the ROIs
+                            '''plotting.plot_roi(atlas_filename);
+                            print('Harvard-Oxford cortical atlas')
+                            plt.show()'''
+                            # Create a masker object that we can use to select ROIs
+                            masker_ho = NiftiLabelsMasker(labels_img=atlas_filename, standardize=True)
+                            # Apply our atlas to the Nifti object so we can pull out data from single parcels/ROIs
+                            bold_ho = masker_ho.fit_transform(subj_data)
+                            # print('shape: parcellated bold time courses: ', np.shape(bold_ho))
+                           # print("All time points ", bold_ho.shape)
+
+                            bold_ho_r = np.array(bold_ho[:, roi_id])
+                            bold_vol = bold_ho_r.reshape(bold_ho_r.shape[0], -1)
+
+                            # Trim data based on event onset and duration
+                            bold_vol_roi = bold_vol[onset:offset, :]
+                            #print(bold_vol_roi.shape)
+                            '''plt.figure(figsize=(14, 4))
+                            plt.plot(bold_vol_roi)
+                            plt.ylabel('Evoked activity')
+                            plt.xlabel('Timepoints')
+                            sns.despine()
+                            plt.show()'''
+                            bold_vol_roi = np.transpose(bold_vol_roi)
+                            print("region roi_id attention trials: ", roi_id + 1)
+                            print("subject: ", subject)
+
+                            subject_list.append(subject)
+                            run_list.append(basename(bold_fn))
+                            data.append(bold_vol_roi)
+
+                            #data.append(bold_vol_roi)
+
+                # Make directory to save results
+                output_dir = '/prot/lkz/LSTM/results/roi_story_all_subj/' + 'region-%03d' % (roi_id + 1)
+                if not os.path.exists(output_dir):
+                    os.makedirs(output_dir)
+                np.save(os.path.join(output_dir, '%03d_%s_bold'%(roi_id+1,subtask)), data)
