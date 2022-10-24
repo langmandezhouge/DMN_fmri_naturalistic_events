@@ -1,3 +1,4 @@
+# extract the roi fmri bold of all stories of each subject
 # -*- coding: utf-8 -*-
 
 import warnings
