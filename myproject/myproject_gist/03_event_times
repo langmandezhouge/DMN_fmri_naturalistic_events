@@ -1,3 +1,5 @@
+# alligning the times from audio to fmri.
+
 import math
 import os
 import csv
