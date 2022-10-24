@@ -1,3 +1,5 @@
+#PCA for the mean bold of story(across subjects),then extract events.
+
 from sklearn.decomposition import PCA
 import nibabel as nib
 import numpy as np
