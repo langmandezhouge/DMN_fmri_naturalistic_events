@@ -21,11 +21,26 @@ from nilearn.input_data import NiftiMasker
 from nilearn import plotting
 import matplotlib.pyplot as plt
 import seaborn as sns
+import math
+import numpy as np
+from multiprocessing import Pool
+from multiprocessing import cpu_count
+from multiprocessing import Pool
 
+from joblib import Parallel, delayed
+import multiprocessing
+# what are your inputs, and what operation do you want to
+# perform on each input. For example...
+inputs = range(10)
+def processInput(i):
+    return i * i
+    print(i)
+num_cores = multiprocessing.cpu_count()
+results = Parallel(n_jobs=num_cores)(delayed(processInput)(i) for i in inputs)
+print(results)
 
 space = 'MNI152NLin2009cAsym'
 afni_pipe = 'afni-smooth'
-initial_trim = 6
 
 base_dir = '/prot/lkz/Narratives-snastase/Narratives'
 deriv_dir = join(base_dir, 'derivatives')
@@ -50,8 +65,8 @@ with open(join(base_dir, 'code', 'scan_exclude.json')) as f:
 skip_tasks = ['notthefalllongscram', 'notthefallshortscram',
               'schema']
 
-len = 246
-for idx in range(len):
+len = 216
+for idx in range(215,len):
     roi_id = idx
     # Compile whole-brain ISCs across all subjects
     for task in task_meta:
@@ -88,13 +103,18 @@ for idx in range(len):
 
             # Get a convenience subject list for this task
             subjects = sorted(task_meta[task].keys())
-
+            for m ,sub in enumerate(subjects):
+                sub = sub
+                n = m+1
+            len = n
             # Loop through potential group manipulations (milkyway, paranoia)
             for group in groups:
 
                 # Create lists for storing subjects and run filenames
                 subject_list, run_list = [], []
                 data = []
+                bold_sum = 0
+                print("now subtask: ", subtask)
                 for subject in subjects:
 
                     # Skip the subjects not belonging to this group
@@ -139,12 +159,18 @@ for idx in range(len):
                             print("region roi_id attention trials: ", roi_id + 1)
                             print("subject: ", subject)
 
+                            bold_sum += bold_vol_roi
+
                             # Make directory to save results
                             output_dir = '/prot/lkz/LSTM/roi_results/roi_story_all_subj/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(subtask)
                             if not os.path.exists(output_dir):
                                 os.makedirs(output_dir)
-                            np.save(os.path.join(output_dir, 'roi-%03d_%s_sub-%s_bold' % (roi_id + 1, subtask, subject)), data)
+                            np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, subtask, subject)), bold_vol_roi)
+                            subject_list.append(subject)
+                print("mean_subtask: ", subtask)
+                output = '/prot/lkz/LSTM/roi_results/roi_story_mean/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(subtask)
+                if not os.path.exists(output):
+                    os.makedirs(output)
+                bold_mean = bold_sum/len
+                np.save(os.path.join(output, 'roi-%03d_%s_mean_bold' % (roi_id + 1, subtask)), bold_mean)
 
-                            '''subject_list.append(subject)
-                            run_list.append(basename(bold_fn))
-                            data.append(bold_vol_roi)'''
