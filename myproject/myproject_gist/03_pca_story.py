@@ -27,3 +27,22 @@ for i in os.listdir(path):
         if not os.path.exists(output):
             os.makedirs(output)
         np.save(os.path.join(output, "pca_" + j), bold_pca)
+
+        
+'''path = '/prot/lkz/LSTM/roi_results/roi_story_mean/region-216/'
+
+for j in os.listdir(path):
+        file = path + "/" +j + "/" + "roi-216_" + j + "_mean_bold.npy"
+        data = np.load(file)
+        data = np.transpose(data)
+        pca = PCA(n_components=60) #n_components= 'mle'
+        bold_pca = pca.fit_transform(data)
+
+        print('Original data shape:', data.shape)
+        print('PCA data shape:', bold_pca.shape)
+
+        print("save pca result: ", "021" + ":" + j)
+        output = '/prot/lkz/my_project-gist/story_mean_pca_results/' + "region-216/" + j +"/"
+        if not os.path.exists(output):
+            os.makedirs(output)
+        np.save(os.path.join(output, "pca_" + j), bold_pca)'''
