@@ -9,10 +9,10 @@ path = '/prot/lkz/LSTM/text-gist/text_gist-results/'
 files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
 
 banned = ["'bout"]
-for i in os.listdir("stimuli"):
-    filename1 = "sent/" + i + ".txt"
-    filename3 = "time/" + i + ".txt"
-    filename2 = "stimuli/" + i + "/align.csv"
+for i in os.listdir(files):
+    filename1 = path + "sent/" + i + ".txt"
+    filename3 = path + "time/" + i + ".txt"
+    filename2 = path + "stimuli/" + i + "/align.csv"
     list1 = []
     list2 = []
     list3 = []
