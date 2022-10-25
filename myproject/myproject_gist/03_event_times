@@ -8,10 +8,11 @@ import pickle
 path = '/prot/lkz/LSTM/text-gist/text_gist-results/'
 files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
 
-for i in os.listdir(files):
-    filename1 = path + "sent/" + i + ".txt"
-    filename3 = path + "times/" + i + ".txt"
-    filename2 = path + "stimuli/" + i + "/align.csv"
+banned = ["'bout"]
+for i in os.listdir("stimuli"):
+    filename1 = "sent/" + i + ".txt"
+    filename3 = "time/" + i + ".txt"
+    filename2 = "stimuli/" + i + "/align.csv"
     list1 = []
     list2 = []
     list3 = []
@@ -25,11 +26,13 @@ for i in os.listdir(files):
                     .replace(":", " ")\
                     .replace("!", " ")\
                     .replace(";", " ")\
+                    .replace("(", " ")\
+                    .replace(")", " ")\
                     .replace("--", " ")\
                     .replace("\"", " ")\
                     .split()
             for j in tmpt:
-                if j.startswith("'"):
+                if j.startswith("'") and j not in banned:
                     j = j[1:]
                 if j.endswith("'"):
                     j = j[:-1]
@@ -38,7 +41,7 @@ for i in os.listdir(files):
     with open(filename2, "r", encoding="utf-8") as file:
         lines = csv.reader(file)
         for line in lines:
-            list2.append([line[0].replace("’", "'"), None if len(line) < 3 or len(line[2]) == 0 else line[2], None if len(line) < 4 or len(line[3]) == 0 else line[3]])
+            list2.append([line[0].replace("’", "'").replace("\xf1", "n"), None if len(line) < 3 or len(line[2]) == 0 else line[2], None if len(line) < 4 or len(line[3]) == 0 else line[3]])
     begin = None
     endin = None
     count = -1
@@ -57,6 +60,7 @@ for i in os.listdir(files):
                         endin_TR = math.floor(float(endin) / 1.5)
                         if endin_TR > begin_TR:
                             list4.append([begin_TR, endin_TR])
+
                     '''else:
                         list4.append([])
                 else:
@@ -78,7 +82,8 @@ for i in os.listdir(files):
                 begin_TR = math.ceil(float(begin) / 1.5)
                 endin_TR = math.floor(float(endin) / 1.5)
                 if endin_TR > begin_TR:
-                   list4.append([begin_TR, endin_TR])
+                    list4.append([begin_TR, endin_TR])
+
             '''else:
                 list4.append([])
         else:
