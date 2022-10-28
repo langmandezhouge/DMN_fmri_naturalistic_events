@@ -1,3 +1,5 @@
+# according to the events times align the event vectors(= len(events_times))
+
 import pickle
 import os
 import numpy as np
