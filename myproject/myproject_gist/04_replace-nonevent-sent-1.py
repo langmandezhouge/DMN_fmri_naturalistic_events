@@ -2,10 +2,10 @@ import os
 import re
 import numpy as np
 import torch
-path1 = '/prot/lkz/LSTM/text-gist/text_gist-results/sent/'
+path1 = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/sent/'
 sent = os.listdir(path1)
 
-path2 = '/prot/lkz/LSTM/text-gist/text_gist-results/events_midput/'
+path2 = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/events_midput/'
 event = os.listdir(path2)
 
 for i in event:
@@ -37,7 +37,7 @@ for i in event:
             num = len(tmpt)
 
             b = np.ones(num,dtype=np.int)
-            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "04_events_sent/"
+            output = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/' + "04_events_sent/"
             if not os.path.exists(output):
                 os.makedirs(output)
             filename = output + i
@@ -50,7 +50,7 @@ for i in event:
             s = str(sents)[2:-5]
             s = s.replace("\\","")
             #s = re.sub('[\]','',s)
-            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "04_events_sent/"
+            output = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/' + "04_events_sent/"
             if not os.path.exists(output):
                 os.makedirs(output)
             filename = output + i
