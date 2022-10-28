@@ -23,7 +23,7 @@ for i in os.listdir(path):
 
         print("save pca result: ", i + ":" + j)
         num = f1 + f2
-        output = '/prot/lkz/my_project-gist/story_mean_pca_results/' + "region-" + num + "/" + j +"/"
+        output = '/prot/lkz/my_project/my_project-gist/story_mean_pca_results/' + "region-" + num + "/" + j +"/"
         if not os.path.exists(output):
             os.makedirs(output)
         np.save(os.path.join(output, "pca_" + j), bold_pca)
