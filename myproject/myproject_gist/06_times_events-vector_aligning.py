@@ -8,7 +8,7 @@ path = '/prot/lkz/LSTM/text-gist/text_gist-results/'
 files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
 
 for i in os.listdir(files):
-    time_path = path + "events_times/" + i + ".txt"
+    time_path = path + "05_events_sent_times/" + i + ".txt"
     event_path = path + "vector_result/" + i + ".txt"
     time_file = open(time_path, "rb")
     time_file = pickle.load(time_file)
