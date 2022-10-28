@@ -1,4 +1,3 @@
-# alligning the times from audio to fmri.
 
 import math
 import os
@@ -11,7 +10,7 @@ files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
 banned = ["'bout"]
 for i in os.listdir(files):
     filename1 = path + "sent/" + i + ".txt"
-    filename3 = path + "time/" + i + ".txt"
+    filename3 = path + "all_times/" + i + ".txt"
     filename2 = path + "stimuli/" + i + "/align.csv"
     list1 = []
     list2 = []
@@ -38,7 +37,7 @@ for i in os.listdir(files):
                     j = j[:-1]
                 if len(j) > 0:
                     list1.append([j, idx])
-    with open(filename2, "r", encoding="utf-8") as file:
+    with open(filename2, "r", encoding="gb18030") as file:
         lines = csv.reader(file)
         for line in lines:
             list2.append([line[0].replace("’", "'").replace("\xf1", "n"), None if len(line) < 3 or len(line[2]) == 0 else line[2], None if len(line) < 4 or len(line[3]) == 0 else line[3]])
@@ -47,24 +46,12 @@ for i in os.listdir(files):
     count = -1
     list4 = []
     for j in range(len(list2)):
-        if list1[j][0] != list2[j][0]:
-            print(list1[j][0])
-            print(list2[j][0])
-            print(filename1)
-            raise Exception()
         if count != list1[j][1]:
             if count >= 0:
                 if begin is not None and endin is not None:
-                    if float(endin) - float(begin) > 2.0:
-                        begin_TR = math.ceil(float(begin) / 1.5)
-                        endin_TR = math.floor(float(endin) / 1.5)
-                        if endin_TR > begin_TR:
-                            list4.append([begin_TR, endin_TR])
-
-                    '''else:
-                        list4.append([])
+                   list4.append([math.ceil(float(begin) / 1.5), math.floor(float(endin) / 1.5)])
                 else:
-                    list4.append([])'''
+                    list4.append([])
             count = list1[j][1]
             begin = None
             endin = None
@@ -78,16 +65,13 @@ for i in os.listdir(files):
             endin = list2[j][2]
     if count >= 0:
         if begin is not None and endin is not None:
-            if float(endin) - float(begin) > 2.0:
-                begin_TR = math.ceil(float(begin) / 1.5)
-                endin_TR = math.floor(float(endin) / 1.5)
-                if endin_TR > begin_TR:
-                    list4.append([begin_TR, endin_TR])
-
-            '''else:
-                list4.append([])
+           list4.append([math.ceil(float(begin) / 1.5), math.floor(float(endin) / 1.5)])
         else:
-            list4.append([])'''
+            list4.append([])
+
     print(list4)
+    print(len(list4))
+    if not os.path.exists(filename3):
+        os.makedirs(filename3)
     with open(filename3, "wb") as file:
         pickle.dump(list4, file, protocol=0)
