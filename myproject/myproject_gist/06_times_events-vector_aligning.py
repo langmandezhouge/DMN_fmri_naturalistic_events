@@ -19,7 +19,7 @@ for i in os.listdir(files):
     aligning_event_file = event_file[:num]
     print(aligning_event_file.shape)
 
-    output = path + "times_events-vector_aligning/"
+    output = path + "times_events-vector/"
     if not os.path.exists(output):
         os.makedirs(output)
     np.save(os.path.join(output, i), aligning_event_file)
