@@ -5,8 +5,8 @@ import os
 import csv
 import pickle
 
-path = '/prot/lkz/LSTM/text-gist/text_gist-results/'
-files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
+path = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/'
+files = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/stimuli/'
 
 banned = ["'bout"]
 for i in os.listdir(files):
