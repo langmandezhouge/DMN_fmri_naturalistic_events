@@ -48,7 +48,7 @@ for i in os.listdir(files):
         if count != list1[j][1]:
             if count >= 0:
                 if begin is not None and endin is not None:
-                   if float(endin) - float(begin) >= 2.0:
+                   if float(endin) - float(begin) > 2.0:
                        begin_TR = math.ceil(float(begin) / 1.5)
                        endin_TR = math.floor(float(endin) / 1.5)
                        if endin_TR > begin_TR:
@@ -68,7 +68,7 @@ for i in os.listdir(files):
             endin = list2[j][2]
     if count >= 0:
         if begin is not None and endin is not None:
-            if float(endin) - float(begin) >= 2.0:
+            if float(endin) - float(begin) > 2.0:
                 begin_TR = math.ceil(float(begin) / 1.5)
                 endin_TR = math.floor(float(endin) / 1.5)
                 if endin_TR > begin_TR:
