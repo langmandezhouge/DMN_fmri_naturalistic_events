@@ -1,3 +1,4 @@
+# the times([onset,offset]) of all sentences. no conditions.
 
 import math
 import os
