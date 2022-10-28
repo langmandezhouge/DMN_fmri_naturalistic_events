@@ -23,7 +23,7 @@ for i in os.listdir(path):
 
         print("save pca result: ", i + ":" + j)
         num = f1 + f2
-        output = '/prot/lkz/my_project/my_project-gist/story_mean_pca_results/' + "region-" + num + "/" + j +"/"
+        output = '/prot/lkz/my_project/my_project-gist/03_story_mean_pca_results/' + "region-" + num + "/" + j +"/"
         if not os.path.exists(output):
             os.makedirs(output)
         np.save(os.path.join(output, "pca_" + j), bold_pca)
@@ -42,7 +42,7 @@ for j in os.listdir(path):
         print('PCA data shape:', bold_pca.shape)
 
         print("save pca result: ", "021" + ":" + j)
-        output = '/prot/lkz/my_project-gist/story_mean_pca_results/' + "region-216/" + j +"/"
+        output = '/prot/lkz/my_project-gist/03_story_mean_pca_results/' + "region-216/" + j +"/"
         if not os.path.exists(output):
             os.makedirs(output)
         np.save(os.path.join(output, "pca_" + j), bold_pca)'''
