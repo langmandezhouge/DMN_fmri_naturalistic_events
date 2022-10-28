@@ -2,8 +2,8 @@ import os
 import pickle
 import numpy as np
 
-path = '/prot/lkz/LSTM/text-gist/text_gist-results/'
-files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
+path = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/'
+files = '/prot/lkz/my_project/my_project-gist/text-gist/text_gist-results/stimuli/'
 
 for i in os.listdir(files):
     filename = path + "05_events_sent_times/" + i + ".txt"
