@@ -16,10 +16,10 @@ for i in os.listdir(files):
 
     event_file = open(event_path, "rb")
     event_file = pickle.load(event_file)
-    final_event_file = event_file[:num]
-    print(final_event_file.shape)
+    aligning_event_file = event_file[:num]
+    print(aligning_event_file.shape)
 
     output = path + "events-vector_times_aligning/"
     if not os.path.exists(output):
         os.makedirs(output)
-    np.save(os.path.join(output, i), final_event_file)
+    np.save(os.path.join(output, i), aligning_event_file)
