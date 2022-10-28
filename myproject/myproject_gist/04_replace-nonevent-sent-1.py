@@ -37,7 +37,7 @@ for i in event:
             num = len(tmpt)
 
             b = np.ones(num,dtype=np.int)
-            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "new_new_sent/"
+            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "04_events_sent/"
             if not os.path.exists(output):
                 os.makedirs(output)
             filename = output + i
@@ -50,7 +50,7 @@ for i in event:
             s = str(sents)[2:-5]
             s = s.replace("\\","")
             #s = re.sub('[\]','',s)
-            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "new_new_sent/"
+            output = '/prot/lkz/LSTM/text-gist/text_gist-results/' + "04_events_sent/"
             if not os.path.exists(output):
                 os.makedirs(output)
             filename = output + i
