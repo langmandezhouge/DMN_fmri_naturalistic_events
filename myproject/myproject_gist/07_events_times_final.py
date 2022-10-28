@@ -8,8 +8,8 @@ files = '/prot/lkz/LSTM/text-gist/text_gist-results/stimuli/'
 
 banned = ["'bout"]
 for i in os.listdir(files):
-    filename1 = path + "sent/" + i + ".txt"
-    filename3 = path + "events_times_final/" + i + ".txt"
+    filename1 = path + "04_events_sent/" + i + ".txt"
+    filename3 = path + "07_mid-scale-events_vector_times/" + i + ".txt"
     filename2 = path + "stimuli/" + i + "/align.csv"
     list1 = []
     list2 = []
