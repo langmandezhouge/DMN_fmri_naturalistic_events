@@ -18,9 +18,6 @@ from nilearn import input_data
 import numpy as np
 from joblib import Parallel, delayed
 
-'''def func(idx):
-    roi_id = idx'''
-
 space = 'MNI152NLin2009cAsym'
 afni_pipe = 'afni-smooth'
 
@@ -156,6 +153,3 @@ for idx in range(20,21):
                                 if not os.path.exists(output_dir):
                                     os.makedirs(output_dir)
                                 np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, subtask, subject)), bold_vol_roi)
-
-'''num_cores = 10
-Parallel(n_jobs=num_cores)(delayed(func)(i) for i in range(246))'''
