@@ -1,0 +1,164 @@
+# -*- coding: utf-8 -*-
+
+import warnings
+import sys
+
+if not sys.warnoptions:
+    warnings.simplefilter("ignore")
+
+import nibabel as nib
+import os
+from os.path import basename, join
+import json
+from glob import glob
+from natsort import natsorted
+from exclude_scans import exclude_scan
+from nilearn import input_data
+import numpy as np
+from joblib import Parallel, delayed
+
+def func(idx):
+    roi_id = idx
+    space = 'MNI152NLin2009cAsym'
+    afni_pipe = 'afni-smooth'
+
+    base_dir = '/prot/lkz/Narratives'
+    deriv_dir = join(base_dir, 'derivatives')
+    preproc_dir = join(deriv_dir, 'fmriprep')
+    afni_dir = join(base_dir, 'derivatives', afni_pipe)
+
+    code_dir = '/protNew/lkz/my_project/my_project-gist/onebrain/github/'
+    # Get metadata for all subjects for a given task
+    with open(join(code_dir, 'code', 'task_meta.json')) as f:
+        task_meta = json.load(f)
+
+    # Get event onsets and durations for each task
+    with open(join(code_dir, 'code', 'event_meta.json')) as f:
+        event_meta = json.load(f)
+
+    # Load scans to exclude
+    exclude = True
+    with open(join(code_dir, 'code', 'scan_exclude.json')) as f:
+        scan_exclude = json.load(f)
+
+    skip_tasks = ['notthefalllongscram', 'notthefallshortscram', 'prettymouth', 'schema']
+
+    '''for idx in range(20,21):
+        roi_id = idx'''
+    for task in task_meta:
+        if task in skip_tasks:
+            print(f"Skipping {task} for whole-brain")
+            continue
+
+        # Split off 'slumlordreach' stories
+        if task == 'slumlordreach':
+            subtasks = ['slumlordreach']
+
+        else:
+            subtasks = [task]
+
+        # Loop through potential substories (i.e. for 'slumlordreach')
+        for subtask in subtasks:
+
+            # Split milkyway and prettymouth by condition/group;
+            # note that this means we're implicitly ignoring the
+            # naive vs non-naive listening conditions of merlin,
+            # sherlock, shapesphysical, shapessocial, notthefall
+            if task == 'milkyway':
+                groups = ['original', 'vodka', 'synonyms']
+            # elif task == 'schema':
+            # groups = ['bigbang', 'friends', 'himym', 'vinny', 'santa', 'shame', 'seinfeld', 'upintheair']
+            else:
+                groups = [None]
+
+            # Grab event onsets and offsets for trimming
+            onset = event_meta[task][subtask]['onset']
+            offset = onset + event_meta[task][subtask]['duration']
+
+            # Get a convenience subject list for this task
+            subjects = sorted(task_meta[task].keys())
+            for m, sub in enumerate(subjects):
+                sub = sub
+                n = m + 1
+            len = n
+            # Loop through potential group manipulations (milkyway, paranoia)
+            for group in groups:
+
+                # Create lists for storing subjects and run filenames
+                subject_list, run_list = [], []
+                data = []
+                bold_sum = 0
+                print("now subtask: ", subtask)
+                for subject in subjects:
+
+                    # Skip the subjects not belonging to this group
+                    if group and group != task_meta[subtask][
+                        subject]['condition']:
+                        continue
+
+                    data_dir = join(afni_dir, subject, 'func')
+
+                    bold_fns = natsorted(glob(join(data_dir,
+                                                   (
+                                                       f'{subject}_task-{task}_*space-{space}_res-native_desc-sm6_bold.nii.gz'))))
+
+                    # Grab all runs in case of multiple run
+                    for bold_fn in bold_fns:
+
+                        if exclude and exclude_scan(bold_fn, scan_exclude):
+                            print(f"Excluding {basename(bold_fn)}!")
+                            continue
+
+                        else:
+
+                            # Strip comments and load in data as numpy array
+                            subj_data = nib.load(bold_fn)
+
+                            atlas_filename = '/protNew/lkz/my_project/roi_mask/' + 'roi_' + '%03d' % (
+                                    roi_id + 1) + '.nii.gz'
+                            # Plot the ROIs
+                            '''plotting.plot_roi(atlas_filename);
+                            print('Harvard-Oxford cortical atlas')
+                            plt.show()'''
+
+                            # Init a masker object that also standardizes the data
+                            masker_wb = input_data.NiftiMasker(mask_img=atlas_filename, standardize=True)
+                            # Pull out the time course for voxel
+                            bold_vol = masker_wb.fit_transform(subj_data)
+
+                            # bold_vol = bold_ho_r.reshape(bold_ho_r.shape[0], -1)
+                            bold_vol_roi = np.transpose(bold_vol)
+                            if subtask == 'merlin':
+                                bold_vol_roi = bold_vol_roi[:, 0:613]
+                            elif subtask == 'sherlock':
+                                bold_vol_roi = bold_vol_roi[:, 0:724]
+                            elif subtask == 'shapesphysical':
+                                bold_vol_roi = bold_vol_roi[:, 0:309]
+                            elif subtask == 'shapessocial':
+                                bold_vol_roi = bold_vol_roi[:, 0:309]
+                            elif subtask == 'slumlordreach':
+                                bold_vol_roi = bold_vol_roi[:, 0:1205]
+                            else:
+                                print(subtask)
+                            print("region roi_id attention trials: ", roi_id + 1, subtask)
+                            # print("subject: ", subject)
+
+                            # Make directory to save results
+                            if subtask == 'milkyway':
+                                output_dir = '/protNew/lkz/my_project/Narrative-result/new_allbold_allsub/' + 'region-%03d' % (
+                                        roi_id + 1) + '/' + '%s' % (group)
+                                if not os.path.exists(output_dir):
+                                    os.makedirs(output_dir)
+                                np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, group, subject)),
+                                        bold_vol_roi)
+                            else:
+                                output_dir = '/protNew/lkz/my_project/Narrative-result/new_allbold_allsub/' + 'region-%03d' % (
+                                        roi_id + 1) + '/' + '%s' % (subtask)
+                                if not os.path.exists(output_dir):
+                                    os.makedirs(output_dir)
+                                np.save(
+                                    os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, subtask, subject)),
+                                    bold_vol_roi)
+
+num_cores = 10
+Parallel(n_jobs=num_cores)(delayed(func)(i) for i in range(246))
