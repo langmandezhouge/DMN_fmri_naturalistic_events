@@ -8,78 +8,54 @@ if not sys.warnoptions:
     warnings.simplefilter("ignore")
 
 import nibabel as nib
-import numpy as np
 import os
-
 from os.path import basename, join
 import json
 from glob import glob
-
 from natsort import natsorted
 from exclude_scans import exclude_scan
 from nilearn import input_data
-from nilearn.input_data import NiftiMasker
-from nilearn import plotting
-import matplotlib.pyplot as plt
-import seaborn as sns
-import math
 import numpy as np
-from multiprocessing import Pool
-from multiprocessing import cpu_count
-from multiprocessing import Pool
-
 from joblib import Parallel, delayed
-import multiprocessing
-# what are your inputs, and what operation do you want to
-# perform on each input. For example...
-inputs = range(10)
-def processInput(i):
-    return i * i
-    print(i)
-num_cores = multiprocessing.cpu_count()
-results = Parallel(n_jobs=num_cores)(delayed(processInput)(i) for i in inputs)
-print(results)
+
+'''def func(idx):
+    roi_id = idx'''
 
 space = 'MNI152NLin2009cAsym'
 afni_pipe = 'afni-smooth'
 
-base_dir = '/prot/lkz/Narratives-snastase/Narratives'
+base_dir = '/prot/lkz/Narratives'
 deriv_dir = join(base_dir, 'derivatives')
 preproc_dir = join(deriv_dir, 'fmriprep')
 afni_dir = join(base_dir, 'derivatives', afni_pipe)
 
-code_dir = '/prot/lkz/LSTM/github/'
+code_dir = '/protNew/lkz/my_project/my_project-gist/onebrain/github/'
 # Get metadata for all subjects for a given task
 with open(join(code_dir, 'code', 'task_meta.json')) as f:
     task_meta = json.load(f)
 
 # Get event onsets and durations for each task
-with open(join(base_dir, 'code', 'event_meta.json')) as f:
+with open(join(code_dir, 'code', 'event_meta.json')) as f:
     event_meta = json.load(f)
 
 # Load scans to exclude
 exclude = True
-with open(join(base_dir, 'code', 'scan_exclude.json')) as f:
+with open(join(code_dir, 'code', 'scan_exclude.json')) as f:
     scan_exclude = json.load(f)
 
-# Skip 'notthefall' scramble and 'schema' tasks for simplicity
-skip_tasks = ['notthefalllongscram', 'notthefallshortscram',
-              'schema']
+skip_tasks = ['notthefalllongscram', 'notthefallshortscram', 'prettymouth', 'schema']
 
-len = 216
-for idx in range(215,len):
+for idx in range(20,21):
     roi_id = idx
     # Compile whole-brain ISCs across all subjects
     for task in task_meta:
-
-        # Skip 'schema' task for simplicity
         if task in skip_tasks:
-            print(f"Skipping {task} for whole-brain ISC analysis")
+            print(f"Skipping {task} for whole-brain")
             continue
 
         # Split off 'slumlordreach' stories
         if task == 'slumlordreach':
-            subtasks = ['slumlord', 'reach']
+            subtasks = ['slumlordreach']
 
         else:
             subtasks = [task]
@@ -93,8 +69,8 @@ for idx in range(215,len):
             # sherlock, shapesphysical, shapessocial, notthefall
             if task == 'milkyway':
                 groups = ['original', 'vodka', 'synonyms']
-            elif task == 'prettymouth':
-                groups = ['affair', 'paranoia']
+            #elif task == 'schema':
+                #groups = ['bigbang', 'friends', 'himym', 'vinny', 'santa', 'shame', 'seinfeld', 'upintheair']
             else:
                 groups = [None]
 
@@ -141,7 +117,7 @@ for idx in range(215,len):
                             # Strip comments and load in data as numpy array
                             subj_data = nib.load(bold_fn)
 
-                            atlas_filename = '/prot/lkz/LSTM/roi_results/roi_mask/' + 'roi_' + '%03d'%(roi_id+1) + '.nii.gz'
+                            atlas_filename = '/protNew/lkz/my_project/roi_mask/' + 'roi_' + '%03d'%(roi_id+1) + '.nii.gz'
                             # Plot the ROIs
                             '''plotting.plot_roi(atlas_filename);
                             print('Harvard-Oxford cortical atlas')
@@ -154,24 +130,32 @@ for idx in range(215,len):
 
                            # bold_vol = bold_ho_r.reshape(bold_ho_r.shape[0], -1)
                             bold_vol_roi = np.transpose(bold_vol)
-                            # Trim data based on event onset and duration
-                            bold_vol_roi = bold_vol_roi[:,onset:offset]
-
-                            print("region roi_id attention trials: ", roi_id + 1)
-                            print("subject: ", subject)
-
-                            bold_sum += bold_vol_roi
+                            if subtask == 'merlin':
+                                bold_vol_roi = bold_vol_roi[:,0:613]
+                            elif subtask == 'sherlock':
+                                 bold_vol_roi = bold_vol_roi[:,0:724]
+                            elif subtask == 'shapesphysical':
+                                 bold_vol_roi = bold_vol_roi[:, 0:309]
+                            elif subtask == 'shapessocial':
+                                 bold_vol_roi = bold_vol_roi[:, 0:309]
+                            elif subtask == 'slumlordreach':
+                                bold_vol_roi = bold_vol_roi[:, 0:1205]
+                            else:
+                                print(subtask)
+                            print("region roi_id attention trials: ", roi_id + 1,subtask)
+                            #print("subject: ", subject)
 
                             # Make directory to save results
-                            output_dir = '/prot/lkz/LSTM/roi_results/roi_story_all_subj/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(subtask)
-                            if not os.path.exists(output_dir):
-                                os.makedirs(output_dir)
-                            np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, subtask, subject)), bold_vol_roi)
-                            subject_list.append(subject)
-                print("mean_subtask: ", subtask)
-                output = '/prot/lkz/LSTM/roi_results/roi_story_mean/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(subtask)
-                if not os.path.exists(output):
-                    os.makedirs(output)
-                bold_mean = bold_sum/len
-                np.save(os.path.join(output, 'roi-%03d_%s_mean_bold' % (roi_id + 1, subtask)), bold_mean)
+                            if subtask == 'milkyway':
+                               output_dir = '/protNew/lkz/my_project/Narrative-result/allbold_allsub/' + 'region-%03d' % (roi_id + 1) + '/' +'%s'%(group)
+                               if not os.path.exists(output_dir):
+                                  os.makedirs(output_dir)
+                               np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, group, subject)), bold_vol_roi)
+                            else:
+                                output_dir = '/protNew/lkz/my_project/Narrative-result/allbold_allsub/' + 'region-%03d' % (roi_id + 1) + '/' + '%s' % (subtask)
+                                if not os.path.exists(output_dir):
+                                    os.makedirs(output_dir)
+                                np.save(os.path.join(output_dir, 'roi-%03d_%s_%s_bold' % (roi_id + 1, subtask, subject)), bold_vol_roi)
 
+'''num_cores = 10
+Parallel(n_jobs=num_cores)(delayed(func)(i) for i in range(246))'''
