@@ -11,7 +11,9 @@ import matplotlib.pyplot as plt
 from transformers.optimization import get_linear_schedule_with_warmup
 import argparse
 import pickle
-
+import os
+from scipy import stats
+import pandas as pd
 
 class subDataset(Dataset.Dataset):
     # 初始化定义数据内容和标签
@@ -123,7 +125,8 @@ parser.add_argument('--p5', type=float, default=0.0) # 第五层dropout(用于�
 parser.add_argument("--filename", type=str, default="result.pkl")
 args = parser.parse_args()
 
-path = 'region-215_labels_part.npy'
+i = '022'
+path = '/protNew/lkz/my_project/my_project-gist/twobrain-concatenate/10_labels/' + "region-" + i + "_labels.npy"
 data_file = np.load(path,allow_pickle=True)
 datas = np.transpose(data_file)
 data  = datas[0]
@@ -143,10 +146,10 @@ prob2 = args.p2
 prob3 = args.p3
 prob4 = args.p4
 prob5 = args.p5
-max_epochs = 50 # epoch
+max_epochs = 100 # epoch
 test_interval = 5
 warmup_rate = 0.2
-weight_deca = 0.0 # weight decay
+weight_decay = 0.1 # weight decay
 torch.manual_seed(1029)
 dataset = subDataset(data, label)
 train_size = int(len(dataset) * 0.8)
@@ -160,7 +163,7 @@ test_loader = DataLoader.DataLoader(test_dataset, batch_size=batch_size, shuffle
 # 模型和优化器定义
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 lstm = Model(input_size, hidden1_size, hidden2_size, hidden3_size, hidden4_size, output_size, prob1, prob2, prob3, prob4, prob5).to(device)
-optimizer = torch.optim.Adam(lstm.parameters(), lr=learning_rate, weight_decay=weight_deca)
+optimizer = torch.optim.Adam(lstm.parameters(), lr=learning_rate, weight_decay=weight_decay)
 trains_step = max_epochs * len(train_loader)
 warmup_step = round(trains_step * warmup_rate)
 scheduler = get_linear_schedule_with_warmup(optimizer, warmup_step, trains_step)
@@ -207,6 +210,24 @@ for epoch in range(max_epochs):
             print('----Epoch: [{}/{}], Step: [{}/{}], testLoss:{}----'.format(epoch+1, max_epochs, i+1, len(train_loader), test_loss))
             lstm.train()
 
+    similarity = []
+    if epoch+1 == max_epochs:
+        for j, jtem in enumerate(test_loader):
+            mids = lstm(jtem["data"].to(device))
+            loss = loss_function(mids, jtem["label"].to(device))
+            similarity.append(loss)
+        test_similarity = torch.cat(similarity, 0).cpu().detach().numpy()
+        test_similarity_mean = torch.mean(torch.cat(similarity, 0)).cpu().detach().numpy()
+        r,p_value = stats.ttest_1samp(test_similarity, 0, axis=0)
+
+        out = '/protNew/lkz/my_project/my_project-gist/twobrain-concatenate/lstm-result/' + "region-" + i + "/"
+        if not os.path.exists(out):
+           os.makedirs(out)
+        np.save(os.path.join(out, "test_similarity"), test_similarity)
+        np.save(os.path.join(out, "test_similarity_mean"), test_similarity_mean)
+        np.save(os.path.join(out, "p"), p_value)
+
+
 with open(args.filename, "wb") as file:
     pickle.dump([loss_index, loss_list, eval_index, eval_list, test_index, test_list], file)
 print("final:[best_eval:{} best_test:{}]".format(min(eval_list), test_list[eval_list.index(min(eval_list))]))
@@ -216,4 +237,6 @@ plt.ylabel("loss")
 plt.plot(loss_index, loss_list, "r")
 plt.plot(eval_index, eval_list, "g")
 plt.plot(test_index, test_list, "b")
+plt.title('region-' + i)
+plt.savefig('/protNew/lkz/my_project/my_project-gist/twobrain-concatenate/lstm-result/' + "region-" + i + "/region-" + i + ".png")
 plt.show()
